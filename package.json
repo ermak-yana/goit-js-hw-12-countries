@@ -29,6 +29,7 @@
   },
   "dependencies": {
     "lodash.debounce": "^4.0.8",
-    "pnotify": "^5.2.0"
+    "pnotify": "^5.2.0",
+    "style.css": "^1.0.0"
   }
 }

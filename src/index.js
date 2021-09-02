@@ -1,41 +1,74 @@
-import { alert, defaultModules } from '../node_modules/@pnotify/core/dist/PNotify.js';
-import debounce  from 'lodash.debounce';
+import fetchCountry from './js/fetchCountries.js';
+import list from './templation/listCountry.hbs';
+import renderCountry from './templation/renderCountry.hbs';
+import * as PNotifyMobile from '../node_modules/@pnotify/mobile/dist/PNotifyMobile.js';
+import { defaultModules } from '../node_modules/@pnotify/core/dist/PNotify.js';
+import { alert } from '@pnotify/core';
+import * as Confirm from "@pnotify/confirm";
+import "@pnotify/confirm/dist/PNotifyConfirm.css";
+import "@pnotify/core/dist/PNotify.css";
+import "@pnotify/core/dist/BrightTheme.css";
 
-// debounce()
+defaultModules.set(PNotifyMobile, {});
 
-alert({
-    text: 'Notice me, senpai!'
-  });
+const debounce = require('lodash.debounce');
 
-  const refs = {
-form : document.querySelector('#form'),
-input: document.querySelector('#search'),
-container: document.querySelector('.container')
-  }
-
-  const hendlerSubmit = (e) => {
-    e.preventDefault()
-    const value = refs.input.value;
-    fetch(`https://restcountries.eu/rest/v2/name/${value}`).then(response => response.json()).then(data => console.log(data)).catch(err =>console.log(error));
-  }
-
-  function createList (obj) {
-   const article = ` <article>
-   <h1> ${obj.name}</h1>
-   <img srs = '${obj.flag}' alt = '${obj.name}'/>
-   <ul> 
-   <li>Capital ${obj.capital} </li>
-   <li>Population ${obj.population}</li>
-   <li>Languages ${obj.languages}</li>
-   </ul>
-   </article>
-   `
-   refs.container.insertAdjacentHTML('beforeend', article)
-  }
-
-  function renderCollection (arr) {
-arr.forEach(element => createList);
-  } 
+const $render = document.querySelector('.countries__render'),
+    $input = document.querySelector('.countries__searcher'),
+    $list = document.querySelector('.countries__list');
 
 
-  refs.form.addEventListener('submit',hendlerSubmit)
+$input.addEventListener('input', debounce(handleInput, 500));
+
+function updateView(currencies) {
+    $render.insertAdjacentHTML('beforeend', renderCountry(currencies));
+}
+
+function updateList(currencies) {
+    $list.innerHTML = '';
+    $list.insertAdjacentHTML('beforeend', list(currencies));
+}
+
+function handleInput() {
+    $render.innerHTML = '';
+    $list.innerHTML = '';
+    fetchCountry($input.value).then(renderResult).catch(error);
+}
+
+function renderResult(array) {
+    if (array.length === 1) {
+        updateView(array);
+    } else if (array.length > 10) {
+        alert({
+            text: 'Too many matches found. Please enter a more specific query!',
+            width: '400px',
+            animateSpeed: 'fast',
+            delay: 2000,
+            modules: new Map([
+                [
+                    Confirm,
+                    {
+                        confirm: true,
+                        buttons: [
+                            {
+                                text: "Ok",
+                                primary: true,
+                                click: notice => {
+                                    notice.close();
+                                }
+                            }
+                        ]
+                    }
+                ]
+            ])
+        });
+        return;
+    }
+    else {
+        updateList(array);
+    }
+}
+
+function error() {
+    alert('Enter country name!');
+}
