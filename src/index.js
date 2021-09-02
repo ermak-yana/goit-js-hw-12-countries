@@ -8,7 +8,6 @@ import * as Confirm from "@pnotify/confirm";
 import "@pnotify/confirm/dist/PNotifyConfirm.css";
 import "@pnotify/core/dist/PNotify.css";
 import "@pnotify/core/dist/BrightTheme.css";
-
 defaultModules.set(PNotifyMobile, {});
 
 const debounce = require('lodash.debounce');
